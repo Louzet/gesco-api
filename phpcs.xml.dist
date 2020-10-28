@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+
+    <arg name="basepath" value="."/>
+    <arg name="cache" value=".phpcs-cache"/>
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+
+    <rule ref="PSR12"/>
+
+    <!-- Add in some extra rules from other standards. -->
+	<rule ref="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+
+	<rule ref="Generic.Commenting.Todo"/>
+
+	<rule ref="Squiz.Commenting.FunctionComment.SpacingAfter"/>
+
+	<!-- Only enforce aligning assignment operators when difference is 2 or less. -->
+	<rule ref="Generic.Formatting.MultipleStatementAlignment">
+		<properties>
+			<property name="maxPadding" value="2" />
+		</properties>
+	</rule>
+
+    <file>src/</file>
+    <file>tests/</file>
+
+    <!-- Exclude the Composer Vendor directory. -->
+	<exclude-pattern>/vendor/*</exclude-pattern>
+
+    <!-- Exclude Symfony Kernel file. -->
+	<exclude-pattern>/src/Kernel.php</exclude-pattern>
+
+    <!-- Exclude Bootstrap file. -->
+	<exclude-pattern>/tests/bootstrap.php</exclude-pattern>
+
+</ruleset>
