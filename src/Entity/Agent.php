@@ -4,18 +4,37 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\AgentRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\AgentRepository;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\UserInterface;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ORM\Entity(repositoryClass=AgentRepository::class)
+ * @ApiResource(
+ *      attributes={"pagination_items_per_page"=20, "order"={"createdAt": "desc"}},
+ *      normalizationContext={"groups"={"agent:get"}, "disable_type_enforcement"=true},
+ *      denormalizationContext={"groups"={"agent:post"}, "disable_type_enforcement"=true},
+ *      collectionOperations={
+ *          "get",
+ *          "post"
+ *      },
+ *      itemOperations={
+ *          "get",
+ *          "put",
+ *          "delete"
+ *      }
+ * )
  */
 class Agent extends User implements UserInterface
 {
 
     /**
      * @ORM\Column(type="string")
+     * @Groups({"agent:post"})
      */
     private ?string $password;
 

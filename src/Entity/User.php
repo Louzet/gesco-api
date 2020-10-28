@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -19,21 +20,25 @@ abstract class User
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"agent:get", "operator:get"})
      */
     protected ?int $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Groups({"agent:get", "agent:post", "operator:get", "operator:post"})
      */
     protected ?string $email;
 
     /**
      * @ORM\Column(type="json")
+     * @Groups({"agent:get", "agent:post", "operator:get", "operator:post"})
      */
     protected ?array $roles = [];
 
     /**
      * @ORM\Column(type="datetime_immutable")
+     * @Groups({"agent:get", "operator:get"})
      */
     protected ?\DateTimeInterface $createdAt;
 
