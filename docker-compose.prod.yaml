@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+    db:
+        image: 'postgres:alpine'
+        container_name: gesco_db
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: louzet
+            POSTGRES_USER: password
+            POSTGRES_DB: gesco
+            PGDATA: /var/lib/postgresql/data/db-files/
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        ports:
+            # To allow the host machine to access the ports below, modify the lines below.
+            # For example, to allow the host to connect to port 3306 on the container, you would change
+            # "3306" to "3306:3306". Where the first port is exposed to the host and the second is the container port.
+            # See https://docs.docker.com/compose/compose-file/#ports for more information.
+            - 5432:5432
+
+    adminer:
+        image: adminer:latest
+        container_name: gesco_adminer
+        restart: always
+        depends_on:
+            - postgres
+        ports:
+            - 8081:8080
+
+volumes:
+    db-data:
+        driver: local
+        

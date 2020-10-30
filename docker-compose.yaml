@@ -1,0 +1,74 @@
+version: '3.7'
+
+services:
+    php:
+        build:
+            args:
+                user: gesco
+                uid: 1000
+            context: ./docker/php-fpm
+        container_name: gesco_php
+        restart: unless-stopped
+        working_dir: /var/www/gesco
+        env_file: ./.env
+        depends_on:
+            - db
+        environment:
+            - APP_ENV=${APP_ENV}
+            - APP_SECRET=${APP_SECRET}
+            - DATABASE_URL=${DATABASE_URL}
+            - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
+        volumes:
+            - ./:/var/www/gesco:rw,cached
+
+    nginx:
+        image: nginx:1.19.3-alpine
+        container_name: gesco_nginx
+        restart: unless-stopped
+        depends_on:
+            - php
+        ports:
+            - 8000:80
+        volumes: 
+            - ./public:/var/www/gesco/public:ro
+            - ./docker/nginx:/etc/nginx/conf.d
+
+    db:
+        build:
+            context: ./docker/db/mysql
+        container_name: gesco_db
+        command: ["mysqld"]
+        restart: unless-stopped
+        env_file: ./.env
+        ports:
+            - 3308:3306
+        environment:
+            - MYSQL_ROOT_PASSWORD=${DB_PASS}
+            - MYSQL_DATABASE=${DB_BASE}
+            - MYSQL_USER=${DB_USER}
+            - MYSQL_PASSWORD=${DB_PASS}
+            - SERVICE_TAGS=dev
+            - SERVICE_NAME=mysql
+        volumes:
+            - ./docker/db/mysql/scripts:/docker-entrypoint-initdb.d/:ro
+            - db-data:/var/lib/mysql
+
+    phpmyadmin:
+        depends_on:
+            - db
+        image: phpmyadmin/phpmyadmin
+        container_name: gesco_phpmyadmin
+        env_file: ./.env
+        links:
+            - db
+        restart: always
+        ports:
+            - 8080:80
+        environment:
+            - PMA_HOST=db
+            - PMA_PORT=3306
+            - MYSQL_ROOT_PASSWORD=${DB_PASS}
+
+volumes:
+    db-data:
+        driver: local
