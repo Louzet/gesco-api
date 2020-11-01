@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+    jwt_ttl: '%env(JWT_TTL)%'
 
 services:
     # default configuration for services in *this* file
@@ -29,3 +30,21 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # token guard authenticator for the API
+    token_authenticator:
+        class: App\Security\JwtCookieAuthenticator
+        arguments: ['@lexik_jwt_authentication.encoder', '@doctrine.orm.entity_manager']
+
+    App\EventSubscriber\JWT\JwtCreatedListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: updateJwtData }
+
+    App\EventSubscriber\JWT\AuthenticationSuccessListener:
+        arguments: ['%jwt_ttl%']
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess, priority: -2 }
+
+    App\EventSubscriber\JWT\JwtNotFoundListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_not_found, method: onJwtNotFound, priority: 0 }

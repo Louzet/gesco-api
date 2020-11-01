@@ -92,4 +92,9 @@ abstract class User
 
         return $this;
     }
+
+    public function getCreatedAt(): \DateTimeInterface
+    {
+        return $this->createdAt;
+    }
 }
