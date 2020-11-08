@@ -29,7 +29,7 @@ class AuthenticationSuccessListener
 
         $decodeToken = $this->jwtEncoder->decode($data['token']);
 
-        $data['data'] = [
+        $data['user'] = [
             'email' => $decodeToken['username'],
             'roles' => $decodeToken['roles'],
             'createdAt' => $decodeToken['createdAt']
