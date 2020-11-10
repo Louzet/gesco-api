@@ -36,7 +36,7 @@ jobs:
       # --- Composer cache directory -------------------------------------------
       - name: Get composer cache directory
         id: composer-cache
-        run: echo "::set-output name=dir::$(UID=1000 GID=1000 docker-compose -f docker-compose.yaml exec php composer config cache-files-dir)"
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       # -- Cache actions ------------------------------------------------------
       # https://github.com/actions/cache (official) ----------------------------
@@ -58,10 +58,28 @@ jobs:
       ## —— Coding standards ✨ ————————————————————————————————————————————————
       - name: Coding standards checks (php_codesniffer + PHPStan)
         run: make cs
+  
+  test:
+    name: Test
+    runs-on: ${{ matrix.operating-system }}
+    continue-on-error: ${{ matrix.allow-failures }}
+    strategy:
+      fail-fast: true
+      matrix:
+        operating-system: [ubuntu-latest]
+        allow-failures: [true]
+        php: ['7.4']  
+    steps:
+      - uses: actions/checkout@v2
 
-      ## —— Tests ✅ ———————————————————————————————————————————————————————————
+      ## —— Build project ———————————————————————————————————————————————————————————
+      - name: Composer install
+        run: make composer-install
+
+      ## —— Load fixtures ———————————————————————————————————————————————————————————
       - name: Load Doctrine fixtures
         run: make load-fixtures
 
+      ## —— Tests ✅ ———————————————————————————————————————————————————————————
       - name: Run functionnal and unit tests
         run: make test
