@@ -32,7 +32,7 @@ jobs:
 
       # -- Composer 🧙‍️ ---------------------------------------------------------
       - name: Validate composer.json and composer.lock
-        run: composer validate
+        run: make composer-validate
       
       # --- Composer cache directory -------------------------------------------
       - name: Get composer cache directory

@@ -75,6 +75,10 @@ cs: ## exec coding standard
 composer-install: ## install php dependencies
 	$(php) composer install
 
+.PHONY: composer-validate
+composer-validate: ## validate php dependencies
+	$(php) composer validate
+
 .PHONY: load-fixtures
 load-fixtures: ## load fixtures
 	$(php) php bin/console doctrine:fixtures:load -q
