@@ -1,0 +1,68 @@
+name: PHP Composer
+
+on: [push, pull_request]
+
+jobs:
+
+  integration:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        php: ['7.4']
+    services:
+      
+
+    steps:
+      # -- Setup Github actions 🐙 ---------------------------------------------
+      # https://github.com/actions/checkout (official)
+      - name: checkout
+        uses: actions/checkout@v2
+
+      # https://github.com/shivammathur/setup-php (community) ------------------
+      - name: Setup PHP, extensions and composer with shivammathur/setup-php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo
+        env:
+          update: true
+
+      # -- Composer 🧙‍️ ---------------------------------------------------------
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+      
+      # --- Composer cache directory -------------------------------------------
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      # -- Cache actions ------------------------------------------------------
+      # https://github.com/actions/cache (official) ----------------------------
+      - name: Cache composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      # Install dependencies
+      - name: Install Composer dependencies
+        run: make composer-install
+
+      # -- Symfony 🎵 ----------------------------------------------------------
+      - name: Check Symfony requirements
+        run: vendor/bin/requirements-checker
+
+      ## —— Coding standards ✨ ————————————————————————————————————————————————
+      - name: Coding standards checks (php_codesniffer + PHPStan)
+        run: make cs
+
+      ## —— Tests ✅ ———————————————————————————————————————————————————————————
+      - name: Load Doctrine fixtures
+        run: make load-fixtures
+
+      - name: Run functionnal and unit tests
+        run: make test

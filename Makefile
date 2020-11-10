@@ -66,6 +66,19 @@ db: ## exec nginx in bash mode
 php: ## connect into the container
 	$(EXEC_PHP) bash
 
+.PHONY: cs
+cs: ## exec coding standard
+	$(EXEC_PHP) vendor/bin/phpcs
+	$(EXEC_PHP) vendor/bin/phpcbf
+
+.PHONY: composer-install
+composer-install: ## install php dependencies
+	$(php) composer install
+
+.PHONY: load-fixtures
+load-fixtures: ## load fixtures
+	$(php) php bin/console doctrine:fixtures:load -q
+
 .PHONY: seed
 seed:
 	$(EXEC_PHP) php bin/console doctrine:database:drop --if-exists --force
@@ -73,5 +86,6 @@ seed:
 	$(EXEC_PHP) php bin/console doctrine:migrations:migrate -q
 	$(EXEC_PHP) php bin/console doctrine:fixtures:load -q
 
-test:
+.PHONY: test
+test: ## exec unit and functionals tests
 	$(EXEC_PHP) vendor/bin/simple-phpunit
