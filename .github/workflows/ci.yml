@@ -1,0 +1,103 @@
+name: PHP Composer
+
+on: [push, pull_request]
+
+jobs:
+
+  integration:
+    name: "${{ matrix.os }} / PHP ${{ matrix.php }}"
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        php: ['7.4']      
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 'password'
+        ports:
+          - 3306:3306
+
+    steps:
+      # -- Setup Github actions 🐙 ---------------------------------------------
+      # https://github.com/actions/checkout (official)
+      - name: checkout
+        uses: actions/checkout@v2
+
+      # https://github.com/shivammathur/setup-php (community) ------------------
+      - name: Setup PHP, extensions and composer with shivammathur/setup-php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          ini-values: "memory_limit=-1"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo
+        env:
+          update: true
+
+      # -- Docker Containers 🧙‍️ ---------------------------------------------------------
+      - name: Start docker containers
+        run: make start
+
+      # --- Composer cache directory -------------------------------------------
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      # -- Cache actions ------------------------------------------------------
+      # https://github.com/actions/cache (official) ----------------------------
+      - name: Cache composer dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ matrix.php }}-composer-
+
+      # Composer Install dependencies
+      - name: Install Composer dependencies
+        run: make composer-install
+
+      ## —— Coding standards ✨ ————————————————————————————————————————————————
+      - name: Coding standards checks (php_codesniffer + PHPStan)
+        run: make cs
+  
+  test:
+    name: Test
+    runs-on: ${{ matrix.operating-system }}
+    continue-on-error: ${{ matrix.allow-failures }}
+    strategy:
+      fail-fast: true
+      matrix:
+        operating-system: [ubuntu-latest]
+        allow-failures: [true]
+        php: ['7.4']
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 'password'
+        ports:
+          - 3306:3306
+    steps:
+      - uses: actions/checkout@v2
+
+      ## —— Build project ———————————————————————————————————————————————————————————
+      - name: Composer install
+        run: make composer-install
+
+      ## -- set up database ------------------------------------------------------------
+      - name: Prepare database
+        run: |
+          php bin/console doctrine:database:drop --if-exists --force
+          php bin/console doctrine:database:create
+          php bin/console doctrine:migrations:migrate -q
+
+      ## —— Load fixtures ———————————————————————————————————————————————————————————
+      - name: Load Doctrine fixtures
+        run: make load-fixtures
+
+      ## —— Tests ✅ ———————————————————————————————————————————————————————————
+      - name: Run functionnal and unit tests
+        run: make test
