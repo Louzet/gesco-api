@@ -40,7 +40,7 @@ jobs:
       # -- Cache actions ------------------------------------------------------
       # https://github.com/actions/cache (official) ----------------------------
       - name: Cache composer dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v1
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
