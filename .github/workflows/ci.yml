@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
 
   integration:
-
+    name: "${{ matrix.os }} / PHP ${{ matrix.php }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
@@ -32,7 +32,7 @@ jobs:
       # -- Docker Containers 🧙‍️ ---------------------------------------------------------
       - name: Start docker containers
         run: make start
-      
+
       # --- Composer cache directory -------------------------------------------
       - name: Get composer cache directory
         id: composer-cache
@@ -44,8 +44,8 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ matrix.php }}-composer-
 
       # Composer Install dependencies
       - name: Install Composer dependencies
