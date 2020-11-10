@@ -69,7 +69,7 @@ cs: ## exec coding standard
 
 .PHONY: composer-install
 composer-install: ## install php dependencies
-	$(php) composer install
+	$(php) composer install --no-suggest --prefer-dist --optimize-autoloader
 
 .PHONY: composer-validate
 composer-validate: ## validate php dependencies
