@@ -7,11 +7,19 @@ jobs:
   integration:
     name: "${{ matrix.os }} / PHP ${{ matrix.php }}"
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: true
       matrix:
         os: [ubuntu-latest]
         php: ['7.4']      
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 'password'
+        ports:
+          - 3306:3306
 
     steps:
       # -- Setup Github actions 🐙 ---------------------------------------------
@@ -51,10 +59,6 @@ jobs:
       - name: Install Composer dependencies
         run: make composer-install
 
-      # -- Symfony 🎵 ----------------------------------------------------------
-      - name: Check Symfony requirements
-        run: vendor/bin/requirements-checker
-
       ## —— Coding standards ✨ ————————————————————————————————————————————————
       - name: Coding standards checks (php_codesniffer + PHPStan)
         run: make cs
@@ -68,7 +72,14 @@ jobs:
       matrix:
         operating-system: [ubuntu-latest]
         allow-failures: [true]
-        php: ['7.4']  
+        php: ['7.4']
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 'password'
+        ports:
+          - 3306:3306
     steps:
       - uses: actions/checkout@v2
 
