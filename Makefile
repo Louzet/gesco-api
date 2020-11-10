@@ -1,7 +1,3 @@
-ifndef APP_ENV
-	include .env
-endif
-
 DOCKER_COMPOSE := UID=1000 GID=1000 docker-compose -f docker-compose.yaml
 
 EXEC_DB        := $(DOCKER_COMPOSE) exec db mysql
