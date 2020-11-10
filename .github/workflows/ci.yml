@@ -11,9 +11,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        php: ['7.4']
-    services:
-      
+        php: ['7.4']      
 
     steps:
       # -- Setup Github actions 🐙 ---------------------------------------------
