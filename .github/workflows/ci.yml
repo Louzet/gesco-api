@@ -28,14 +28,14 @@ jobs:
         env:
           update: true
 
-      # -- Composer 🧙‍️ ---------------------------------------------------------
-      - name: Validate composer.json and composer.lock
-        run: make composer-validate
+      # -- Docker Containers 🧙‍️ ---------------------------------------------------------
+      - name: Start docker containers
+        run: make start
       
       # --- Composer cache directory -------------------------------------------
       - name: Get composer cache directory
         id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+        run: echo "::set-output name=dir::$(UID=1000 GID=1000 docker-compose -f docker-compose.yaml exec php composer config cache-files-dir)"
 
       # -- Cache actions ------------------------------------------------------
       # https://github.com/actions/cache (official) ----------------------------
@@ -46,7 +46,7 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      # Install dependencies
+      # Composer Install dependencies
       - name: Install Composer dependencies
         run: make composer-install
 
